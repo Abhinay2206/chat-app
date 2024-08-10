@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import io from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
@@ -12,8 +12,13 @@ import {
   TextField,
   Button,
   Divider,
+  IconButton,
+  Avatar,
+  Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import SendIcon from "@mui/icons-material/Send";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const socket = io("http://localhost:5000");
 
@@ -24,6 +29,7 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const navigate = useNavigate();
+  const messagesEndRef = useRef(null); // Ref to scroll to the bottom
 
   const token = localStorage.getItem("token");
   const decoded = jwtDecode(token);
@@ -54,6 +60,11 @@ const Chat = () => {
       socket.off("receiveMessage");
     };
   }, [decoded.id, selectedUser]);
+
+  useEffect(() => {
+    // Scroll to the bottom whenever messages update
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const fetchUserDetails = async (userIds) => {
     try {
@@ -113,23 +124,27 @@ const Chat = () => {
   };
 
   return (
-    <Container component="main" maxWidth="md" sx={{ mt: 4 }}>
-      <Box display="flex" justifyContent="space-between">
-        <Typography variant="h4" gutterBottom>
-          Chat Application
-        </Typography>
-        <Button variant="outlined" color="secondary" onClick={handleLogout}>
+    <Container component="main" maxWidth="lg" sx={{ mt: 4 }}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Typography variant="h4">Chat</Typography>
+        <Button variant="outlined" color="primary" onClick={handleLogout}>
           Logout
         </Button>
       </Box>
 
       <Box
         display="flex"
-        justifyContent="space-between"
-        sx={{ height: "70vh" }}
+        sx={{ height: "80vh", borderRadius: 2, overflow: "hidden" }}
       >
-        <Box sx={{ width: "30%", borderRight: "1px solid #ddd" }}>
-          <Typography variant="h6" align="center">
+        <Box
+          sx={{
+            width: "30%",
+            borderRight: "1px solid #ddd",
+            overflowY: "auto",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <Typography variant="h6" align="center" sx={{ p: 2 }}>
             Users
           </Typography>
           <List>
@@ -141,69 +156,124 @@ const Chat = () => {
                   selected={selectedUser === userId}
                   onClick={() => selectUser(userId)}
                 >
+                  <Avatar sx={{ mr: 2 }}>
+                    <AccountCircleIcon />
+                  </Avatar>
                   <ListItemText primary={getUserById(userId)} />
                 </ListItem>
               ))
             ) : (
-              <Typography variant="body1" align="center">
+              <Typography variant="body1" align="center" sx={{ p: 2 }}>
                 No users online
               </Typography>
             )}
           </List>
         </Box>
 
-        <Box sx={{ width: "70%", display: "flex", flexDirection: "column" }}>
-          {selectedUser && (
+        <Box
+          sx={{
+            width: "70%",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#fff",
+          }}
+        >
+          {selectedUser ? (
             <>
-              <Typography variant="h6" gutterBottom>
+              <Typography
+                variant="h6"
+                sx={{
+                  p: 2,
+                  borderBottom: "1px solid #ddd",
+                  backgroundColor: "#f1f1f1",
+                }}
+              >
                 Chat with {getUserById(selectedUser)}
               </Typography>
               <Box
                 sx={{
                   flexGrow: 1,
                   overflowY: "auto",
-                  border: "1px solid #ddd",
                   p: 2,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
                 {messages.map((msg, index) => (
-                  <Box key={index} sx={{ mb: 1 }}>
-                    <Typography
-                      variant="body2"
-                      component="div"
-                      color={
-                        msg.sender === decoded.id ? "primary" : "textSecondary"
-                      }
+                  <Box
+                    key={index}
+                    sx={{
+                      mb: 1,
+                      display: "flex",
+                      justifyContent:
+                        msg.sender === decoded.id ? "flex-end" : "flex-start",
+                    }}
+                  >
+                    <Paper
+                      elevation={3}
+                      sx={{
+                        p: 1,
+                        maxWidth: "70%",
+                        bgcolor: msg.sender === decoded.id ? "#e3f2fd" : "#fff",
+                        borderRadius: 2,
+                      }}
                     >
-                      <strong>
-                        {msg.sender === decoded.id
-                          ? "You"
-                          : getUserById(msg.sender)}
-                      </strong>
-                      : {msg.content}
-                    </Typography>
+                      <Typography
+                        variant="body2"
+                        component="div"
+                        color={
+                          msg.sender === decoded.id
+                            ? "primary"
+                            : "textSecondary"
+                        }
+                      >
+                        <strong>
+                          {msg.sender === decoded.id
+                            ? "You"
+                            : getUserById(msg.sender)}
+                        </strong>
+                        : {msg.content}
+                      </Typography>
+                    </Paper>
                   </Box>
                 ))}
+                <div ref={messagesEndRef} />{" "}
+                {/* This will act as the scroll target */}
               </Box>
-              <Divider sx={{ mt: 2, mb: 2 }} />
-              <Box sx={{ display: "flex" }}>
+              <Divider />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  p: 1,
+                  borderTop: "1px solid #ddd",
+                  backgroundColor: "#f1f1f1",
+                }}
+              >
                 <TextField
                   variant="outlined"
                   fullWidth
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Type a message"
+                  sx={{ borderRadius: 20 }}
                 />
-                <Button
-                  variant="contained"
+                <IconButton
                   color="primary"
                   onClick={sendMessage}
-                  sx={{ ml: 2 }}
+                  sx={{ ml: 1 }}
                 >
-                  Send
-                </Button>
+                  <SendIcon />
+                </IconButton>
               </Box>
             </>
+          ) : (
+            <Typography
+              variant="h6"
+              sx={{ p: 2, textAlign: "center", flexGrow: 1 }}
+            >
+              Select a user to start chatting
+            </Typography>
           )}
         </Box>
       </Box>

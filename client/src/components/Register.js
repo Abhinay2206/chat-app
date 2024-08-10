@@ -8,6 +8,7 @@ import {
   Grid,
   Container,
   Paper,
+  CssBaseline,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -44,11 +45,28 @@ const Register = () => {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Paper elevation={3} sx={{ padding: 4 }}>
-        <Typography component="h1" variant="h5" align="center">
-          Register
+      <CssBaseline />
+      <Paper
+        elevation={6}
+        sx={{ padding: 4, borderRadius: 3, backgroundColor: "#f5f5f5" }}
+      >
+        <Typography
+          component="h1"
+          variant="h4"
+          align="center"
+          sx={{ mb: 3, color: "#1976d2" }}
+        >
+          Join the Chat
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -58,6 +76,7 @@ const Register = () => {
                 label="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                sx={{ mb: 2 }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -69,6 +88,7 @@ const Register = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                sx={{ mb: 2 }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -80,6 +100,7 @@ const Register = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                sx={{ mb: 2 }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -91,11 +112,12 @@ const Register = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                sx={{ mb: 2 }}
               />
             </Grid>
           </Grid>
           {error && (
-            <Typography color="error" sx={{ mt: 2 }}>
+            <Typography color="error" sx={{ mb: 2 }}>
               {error}
             </Typography>
           )}
@@ -104,7 +126,7 @@ const Register = () => {
             fullWidth
             variant="contained"
             color="primary"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mb: 2 }}
           >
             Register
           </Button>
